@@ -17,7 +17,12 @@ async function carregarStock() {
         <tr style="${corAlerta}">
             <td>${peca.id}</td>
             <td>${peca.nome}</td>
-            <td>${peca.quantidade}</td>
+            <td>
+            <button onclick="alterarQuantidade(${peca.id}, 'diminuir')" style="padding: 2px 8px; cursor: pointer;">-</button>
+            <span style="margin: 0 10px;">${peca.quantidade}</span>
+            <button onclick="alterarQuantidade(${peca.id}, 'aumentar')" style="padding: 2px 8px; cursor: pointer;">+</button>
+            </td>
+            
             <td>${peca.preco_venda} €</td>
             <td>
                 <button onclick="eliminarPeca(${peca.id})" style="background: #dc3545; color: white; padding: 5px 10px; border: none; cursor: pointer; border-radius: 3px;">Eliminar</button>
@@ -74,5 +79,36 @@ async function eliminarPeca(id) {
         }
     } catch (erro) {
         console.error("Erro no DELETE:", erro);
+    }
+}
+function filtrarStock() {
+    const filtro = document.getElementById('inputPesquisaStock').value.toLowerCase();
+    const tabela = document.getElementById('tabela-stock');
+    const linhas = tabela.getElementsByTagName('tr');
+
+    for (let i = 0; i < linhas.length; i++) {
+        // Obtém o texto da coluna "Nome da Peça" (índice 1)
+        const nomePeca = linhas[i].getElementsByTagName('td')[1]?.textContent.toLowerCase() || "";
+
+        if (nomePeca.includes(filtro)) {
+            linhas[i].style.display = ""; // Mostra se houver correspondência
+        } else {
+            // Garante que não esconde o cabeçalho (thead) por acidente
+            if (linhas[i].parentNode.tagName !== 'THEAD') {
+                linhas[i].style.display = "none"; 
+            }
+        }
+    }
+}
+async function alterarQuantidade(id, operacao) {
+    try {
+        const resposta = await fetch(`http://localhost:3000/stock/${id}/${operacao}`, {
+            method: 'PUT'
+        });
+        if (resposta.ok) {
+            carregarStock(); // Recarrega a tabela para mostrar o novo número
+        }
+    } catch (erro) {
+        console.error("Erro ao alterar quantidade:", erro);
     }
 }

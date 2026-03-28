@@ -26,11 +26,12 @@ const pool = new Pool({
 // 1. Rota para VER o stock
 app.get('/stock', async (req, res) => {
   try {
-    const resBD = await pool.query('SELECT * FROM pecas');
-    res.json(resBD.rows);
+    // Adicionamos ORDER BY id ASC para a ordem ser sempre a mesma (pelo ID)
+    const resultado = await pool.query("SELECT * FROM pecas ORDER BY id ASC");
+    res.json(resultado.rows);
   } catch (err) {
     console.error(err);
-    res.status(500).send("Erro ao ler a base de dados");
+    res.status(500).send("Erro ao obter stock");
   }
 });
 
@@ -322,6 +323,27 @@ app.get('/reparacoes/estatisticas/status', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).send("Erro ao obter estatísticas");
+  }
+});
+
+// Aumentar stock (+1)
+app.put('/stock/:id/aumentar', async (req, res) => {
+  try {
+    await pool.query("UPDATE pecas SET quantidade = quantidade + 1 WHERE id = $1", [req.params.id]);
+    res.send("Stock aumentado");
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+});
+
+// Diminuir stock (-1)
+app.put('/stock/:id/diminuir', async (req, res) => {
+  try {
+    // Evita que o stock fique negativo
+    await pool.query("UPDATE pecas SET quantidade = GREATEST(0, quantidade - 1) WHERE id = $1", [req.params.id]);
+    res.send("Stock diminuído");
+  } catch (err) {
+    res.status(500).send(err.message);
   }
 });
 
