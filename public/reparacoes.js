@@ -6,12 +6,12 @@ async function carregarReparacoes() {
         tabela.innerHTML = '';
 
         reparacoes.forEach(rep => {
-    // Cálculos com IVA (1.23)
-    const precoPecaComIVA = (rep.preco_venda * 1.23).toFixed(2);
-    const maoObraComIVA = (rep.preco_mao_de_obra * 1.23).toFixed(2);
-    const totalFinal = (parseFloat(precoPecaComIVA) + parseFloat(maoObraComIVA)).toFixed(2);
+            // Cálculos com IVA (1.23)
+            const precoPecaComIVA = (rep.preco_venda * 1.23).toFixed(2);
+            const maoObraComIVA = (rep.preco_mao_de_obra * 1.23).toFixed(2);
+            const totalFinal = (parseFloat(precoPecaComIVA) + parseFloat(maoObraComIVA)).toFixed(2);
 
-    tabela.innerHTML += `
+            tabela.innerHTML += `
         <tr>
             <td>${rep.id}</td>
             <td>${rep.equipamento}</td>
@@ -30,15 +30,14 @@ async function carregarReparacoes() {
             </td>
             <td>
                 <button onclick="eliminarReparacao(${rep.id})" style="background: #dc3545; color: white; padding: 5px; border: none; cursor: pointer;">Eliminar</button>
-            </td>
-           
-<td>
-    <button onclick="gerarPDF(${JSON.stringify(rep).replace(/"/g, '&quot;')})" style="background: #007bff; color: white; padding: 5px; border: none; cursor: pointer; margin-right: 5px;">PDF</button>
-    <button onclick="eliminarReparacao(${rep.id})" style="background: #dc3545; color: white; padding: 5px; border: none; cursor: pointer;">Eliminar</button>
+                <button onclick="gerarPDF(${JSON.stringify(rep).replace(/"/g, '&quot;')})" style="background: #007bff; color: white; padding: 5px; border: none; cursor: pointer; margin-right: 5px;">PDF</button>
+                
+    
+    
 </td>
         </tr>
     `;
-});
+        });
     } catch (erro) { console.error(erro); }
 }
 
