@@ -303,6 +303,17 @@ app.get('/stock/pesquisa', async (req, res) => {
   }
 });
 
+app.get('/stock/alertas', async (req, res) => {
+  try {
+    const query = "SELECT * FROM pecas WHERE quantidade < 3";
+    const resultado = await pool.query(query);
+    res.json(resultado.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Erro ao procurar alertas de stock");
+  }
+});
+
 // --- ARRANCAR O SERVIDOR ---
 // Esta parte fica sempre no fim do ficheiro
 app.listen(3000, () => {

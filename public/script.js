@@ -10,18 +10,21 @@ async function carregarStock() {
 
         // 3. Cria uma linha (<tr>) para cada peça que vem da base de dados
        pecas.forEach(peca => {
-            tabela.innerHTML += `
-                <tr>
-                    <td>${peca.id}</td>
-                    <td>${peca.nome}</td>
-                    <td>${peca.quantidade}</td>
-                    <td>${peca.preco_venda} €</td>
-                    <td>
-                        <button onclick="eliminarPeca(${peca.id})" style="background: #dc3545; color: white; padding: 5px 10px; border: none; cursor: pointer; border-radius: 3px;">Eliminar</button>
-                    </td>
-                </tr>
-            `;
-        });
+    // Define a cor de fundo se o stock for baixo
+    const corAlerta = peca.quantidade < 3 ? 'background-color: #f8d7da; color: #721c24; font-weight: bold;' : '';
+
+    tabela.innerHTML += `
+        <tr style="${corAlerta}">
+            <td>${peca.id}</td>
+            <td>${peca.nome}</td>
+            <td>${peca.quantidade}</td>
+            <td>${peca.preco_venda} €</td>
+            <td>
+                <button onclick="eliminarPeca(${peca.id})" style="background: #dc3545; color: white; padding: 5px 10px; border: none; cursor: pointer; border-radius: 3px;">Eliminar</button>
+            </td>
+        </tr>
+    `;
+});
     } catch (erro) {
         console.error("Erro ao carregar o stock:", erro);
         alert("Erro ao ligar à base de dados!");

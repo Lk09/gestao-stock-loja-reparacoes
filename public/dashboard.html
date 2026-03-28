@@ -47,5 +47,30 @@
         }
         carregarFaturacao();
     </script>
+
+    <div id="alerta-container" style="display: none; background: #fff3cd; color: #856404; padding: 20px; border-radius: 10px; border: 1px solid #ffeeba; max-width: 400px; margin: 20px auto;">
+    <h3 style="margin-top: 0;">⚠️ Alerta de Stock Baixo!</h3>
+    <ul id="lista-alertas"></ul>
+</div>
+
+<script>
+    async function verificarAlertas() {
+        try {
+            const res = await fetch('http://localhost:3000/stock/alertas');
+            const pecas = await res.json();
+            const container = document.getElementById('alerta-container');
+            const lista = document.getElementById('lista-alertas');
+
+            if (pecas.length > 0) {
+                container.style.display = 'block';
+                lista.innerHTML = pecas.map(p => `<li>${p.nome} (Apenas ${p.quantidade} un.)</li>`).join('');
+            }
+        } catch (erro) { console.error(erro); }
+    }
+    
+    // Chama a função junto com a da faturação
+    verificarAlertas();
+    carregarFaturacao();
+</script>
 </body>
 </html>
