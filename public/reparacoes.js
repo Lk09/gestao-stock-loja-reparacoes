@@ -31,6 +31,11 @@ async function carregarReparacoes() {
             <td>
                 <button onclick="eliminarReparacao(${rep.id})" style="background: #dc3545; color: white; padding: 5px; border: none; cursor: pointer;">Eliminar</button>
             </td>
+           
+<td>
+    <button onclick="gerarPDF(${JSON.stringify(rep).replace(/"/g, '&quot;')})" style="background: #007bff; color: white; padding: 5px; border: none; cursor: pointer; margin-right: 5px;">PDF</button>
+    <button onclick="eliminarReparacao(${rep.id})" style="background: #dc3545; color: white; padding: 5px; border: none; cursor: pointer;">Eliminar</button>
+</td>
         </tr>
     `;
 });
@@ -108,3 +113,48 @@ async function carregarListasReferencia() {
 
 // Executa a função ao abrir a página
 carregarListasReferencia();
+
+function gerarPDF(rep) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    // Configuração de Estilo
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(20);
+    doc.text("GUIA DE REPARAÇÃO", 105, 20, { align: "center" });
+
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Data: ${new Date().toLocaleDateString()}`, 10, 30);
+    doc.line(10, 35, 200, 35); // Linha divisória
+
+    // Dados do Cliente
+    doc.setFont("helvetica", "bold");
+    doc.text("DADOS DO CLIENTE:", 10, 45);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Nome: ${rep.nome_cliente}`, 10, 52);
+    doc.text(`ID Cliente: ${rep.cliente_id}`, 10, 59);
+
+    // Dados do Equipamento
+    doc.setFont("helvetica", "bold");
+    doc.text("DETALHES DO SERVIÇO:", 10, 75);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Equipamento: ${rep.equipamento}`, 10, 82);
+    doc.text(`Avaria: ${rep.descricao_avaria}`, 10, 89);
+    doc.text(`Peça a usar: ${rep.nome_peca}`, 10, 96);
+    doc.text(`Status Atual: ${rep.status}`, 10, 103);
+
+    // Valores
+    doc.line(10, 110, 200, 110);
+    doc.setFont("helvetica", "bold");
+    const totalIVA = ((parseFloat(rep.preco_venda) + parseFloat(rep.preco_mao_de_obra)) * 1.23).toFixed(2);
+    doc.text(`TOTAL ESTIMADO (C/ IVA): ${totalIVA} EUR`, 10, 120);
+
+    // Rodapé
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "italic");
+    doc.text("Obrigado pela preferência.", 105, 150, { align: "center" });
+
+    // Abre o PDF ou faz download
+    doc.save(`Reparacao_${rep.id}_${rep.equipamento.replace(/\s+/g, '_')}.pdf`);
+}
