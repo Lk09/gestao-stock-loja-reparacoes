@@ -184,23 +184,39 @@ app.get('/reparacoes', async (req, res) => {
   }
 });
 
-// 3. Rota para ATUALIZAR uma reparação (Status, Preço, etc.)
+// 3. Rota para ATUALIZAR uma reparação e abater stock se concluída
 app.put('/reparacoes/:id', async (req, res) => {
   const { id } = req.params;
   const { status, descricao_avaria, equipamento } = req.body;
+  
   try {
-    const query = `
+    // 1. Atualiza a reparação
+    const queryRep = `
       UPDATE reparacoes 
       SET status = $1, descricao_avaria = $2, equipamento = $3 
       WHERE id = $4 
       RETURNING *`;
-    const valores = [status, descricao_avaria, equipamento, id];
-    const resultado = await pool.query(query, valores);
+    const resRep = await pool.query(queryRep, [status, descricao_avaria, equipamento, id]);
 
-    if (resultado.rows.length === 0) {
+    if (resRep.rows.length === 0) {
       return res.status(404).json({ erro: "Reparação não encontrada" });
     }
-    res.json(resultado.rows[0]);
+
+    const reparacao = resRep.rows[0];
+
+    // 2. Descontar do stock se o status for 'Concluído'
+    if (status === 'Concluído') {
+      await pool.query(
+        'UPDATE pecas SET quantidade = quantidade - 1 WHERE id = $1',
+        [reparacao.peca_id]
+      );
+    }
+
+    res.json({ 
+      mensagem: "Reparação atualizada", 
+      reparacao: reparacao 
+    });
+    
   } catch (err) {
     console.error(err);
     res.status(500).send("Erro ao atualizar reparação");
