@@ -22,7 +22,10 @@
 </nav>
     <h1>👥 Gestão de Clientes</h1>
     <button onclick="carregarClientes()" style="padding: 10px; cursor: pointer;">🔄 Atualizar Tabela</button>
-    
+    <div style="margin-bottom: 20px;">
+    <input type="text" id="inputPesquisa" onkeyup="filtrarClientes()" placeholder="🔍 Pesquisar por Nome ou NIF..." 
+           style="padding: 12px; width: 100%; border: 1px solid #ddd; border-radius: 5px; font-size: 16px;">
+</div>
     <table>
         <thead>
             <tr>

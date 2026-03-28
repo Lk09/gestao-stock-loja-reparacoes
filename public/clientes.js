@@ -74,3 +74,21 @@ async function eliminarCliente(id) {
 
 // Arranca automaticamente
 carregarClientes();
+
+function filtrarClientes() {
+    const filtro = document.getElementById('inputPesquisa').value.toLowerCase();
+    const tabela = document.getElementById('tabela-clientes');
+    const linhas = tabela.getElementsByTagName('tr');
+
+    for (let i = 0; i < linhas.length; i++) {
+        // Obtém o texto do Nome (coluna 1) e NIF (coluna 3)
+        const nome = linhas[i].getElementsByTagName('td')[1]?.textContent.toLowerCase() || "";
+        const nif = linhas[i].getElementsByTagName('td')[3]?.textContent.toLowerCase() || "";
+
+        if (nome.includes(filtro) || nif.includes(filtro)) {
+            linhas[i].style.display = ""; // Mostra a linha
+        } else {
+            linhas[i].style.display = "none"; // Esconde a linha
+        }
+    }
+}
