@@ -237,6 +237,28 @@ app.delete('/reparacoes/:id', async (req, res) => {
     res.status(500).send("Erro ao eliminar reparação");
   }
 });
+
+// Rota para PESQUISAR peças por nome (Colocar ANTES do PUT /stock/:id)
+app.get('/stock/pesquisa', async (req, res) => {
+  const { termo } = req.query; 
+  
+  if (!termo) {
+    return res.status(400).json({ erro: "Fornece um termo de pesquisa. Ex: ?termo=bateria" });
+  }
+
+  try {
+    // O ILIKE ignora maiúsculas/minúsculas. Os %% procuram o termo em qualquer parte do nome.
+    const query = 'SELECT * FROM pecas WHERE nome ILIKE $1';
+    const valores = [`%${termo}%`]; 
+    
+    const resultado = await pool.query(query, valores);
+    res.json(resultado.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Erro ao pesquisar peças");
+  }
+});
+
 // --- ARRANCAR O SERVIDOR ---
 // Esta parte fica sempre no fim do ficheiro
 app.listen(3000, () => {
