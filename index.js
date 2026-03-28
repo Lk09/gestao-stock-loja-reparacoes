@@ -314,6 +314,17 @@ app.get('/stock/alertas', async (req, res) => {
   }
 });
 
+app.get('/reparacoes/estatisticas/status', async (req, res) => {
+  try {
+    const query = "SELECT status, COUNT(*) as total FROM reparacoes GROUP BY status";
+    const resultado = await pool.query(query);
+    res.json(resultado.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Erro ao obter estatísticas");
+  }
+});
+
 // --- ARRANCAR O SERVIDOR ---
 // Esta parte fica sempre no fim do ficheiro
 app.listen(3000, () => {

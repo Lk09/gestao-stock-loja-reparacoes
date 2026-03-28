@@ -4,23 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Financeira</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f9; margin: 0; }
+        .nav-bar { background: #343a40; padding: 15px; margin-bottom: 20px; display: flex; gap: 15px; align-items: center; }
         .card { 
-            background: white; 
-            padding: 30px; 
-            border-radius: 10px; 
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1); 
-            text-align: center;
-            max-width: 400px;
-            margin: 50px auto;
+            background: white; padding: 25px; border-radius: 10px; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1); text-align: center;
+            max-width: 500px; margin: 20px auto; 
         }
-        h2 { color: #333; }
         .valor { font-size: 2.5em; color: #28a745; font-weight: bold; margin-top: 10px; }
+        ul { text-align: left; }
     </style>
 </head>
 <body>
-    <nav style="background: #343a40; padding: 15px; margin-bottom: 20px; display: flex; gap: 15px; align-items: center;">
+    <nav class="nav-bar">
         <a href="index.html" style="text-decoration: none; color: white; padding: 8px 15px; background: #007bff; border-radius: 5px; font-weight: bold;">📦 Stock</a>
         <a href="clientes.html" style="text-decoration: none; color: white; padding: 8px 15px; background: #28a745; border-radius: 5px; font-weight: bold;">👥 Clientes</a>
         <a href="reparacoes.html" style="text-decoration: none; color: white; padding: 8px 15px; background: #ff9800; border-radius: 5px; font-weight: bold;">🛠️ Reparações</a>
@@ -30,47 +28,71 @@
     <div class="card">
         <h2>💰 Total Faturado</h2>
         <p>(Peças + Mão de Obra + 23% IVA)</p>
-        <div id="total-valor" class="valor">A carregar...</div>
-        <button onclick="carregarFaturacao()" style="margin-top: 20px; padding: 10px; cursor: pointer;">🔄 Atualizar</button>
+        <div id="total-valor" class="valor">0.00 €</div>
+        <button onclick="carregarDados()" style="margin-top: 15px; cursor: pointer;">🔄 Atualizar Tudo</button>
+    </div>
+
+    <div class="card">
+        <h3>📊 Volume de Reparações</h3>
+        <canvas id="graficoStatus"></canvas>
+    </div>
+
+    <div id="alerta-container" style="display: none; background: #fff3cd; color: #856404; padding: 20px; border-radius: 10px; border: 1px solid #ffeeba; max-width: 500px; margin: 20px auto;">
+        <h3 style="margin-top: 0;">⚠️ Alerta de Stock Baixo!</h3>
+        <ul id="lista-alertas"></ul>
     </div>
 
     <script>
-        async function carregarFaturacao() {
+        let meuGrafico = null;
+
+        async function carregarDados() {
             try {
-                const resposta = await fetch('http://localhost:3000/reparacoes/relatorio/faturacao');
-                const dados = await resposta.json();
-                document.getElementById('total-valor').innerText = dados.total_faturado_com_iva;
-            } catch (erro) {
-                console.error("Erro:", erro);
-                document.getElementById('total-valor').innerText = "Erro ao carregar";
-            }
+                // 1. Carregar Faturação
+                const resFat = await fetch('http://localhost:3000/reparacoes/relatorio/faturacao');
+                const dadosFat = await resFat.json();
+                document.getElementById('total-valor').innerText = dadosFat.total_faturado_com_iva;
+
+                // 2. Carregar Alertas
+                const resAlt = await fetch('http://localhost:3000/stock/alertas');
+                const pecas = await resAlt.json();
+                const container = document.getElementById('alerta-container');
+                if (pecas.length > 0) {
+                    container.style.display = 'block';
+                    document.getElementById('lista-alertas').innerHTML = pecas.map(p => `<li>${p.nome} (Apenas ${p.quantidade} un.)</li>`).join('');
+                } else {
+                    container.style.display = 'none';
+                }
+
+                // 3. Carregar Gráfico
+                const resGraf = await fetch('http://localhost:3000/reparacoes/estatisticas/status');
+                const dadosGraf = await resGraf.json();
+
+                const labels = dadosGraf.map(d => d.status);
+                const valores = dadosGraf.map(d => d.total);
+
+                const ctx = document.getElementById('graficoStatus').getContext('2d');
+                
+                // Destruir gráfico antigo se existir para não sobrepor
+                if (meuGrafico) meuGrafico.destroy();
+
+                meuGrafico = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Qtd Reparações',
+                            data: valores,
+                            backgroundColor: ['#ff9800', '#28a745', '#007bff', '#6c757d']
+                        }]
+                    },
+                    options: { scales: { y: { beginAtZero: true } } }
+                });
+
+            } catch (erro) { console.error("Erro ao carregar dashboard:", erro); }
         }
-        carregarFaturacao();
+
+        // Iniciar ao abrir a página
+        carregarDados();
     </script>
-
-    <div id="alerta-container" style="display: none; background: #fff3cd; color: #856404; padding: 20px; border-radius: 10px; border: 1px solid #ffeeba; max-width: 400px; margin: 20px auto;">
-    <h3 style="margin-top: 0;">⚠️ Alerta de Stock Baixo!</h3>
-    <ul id="lista-alertas"></ul>
-</div>
-
-<script>
-    async function verificarAlertas() {
-        try {
-            const res = await fetch('http://localhost:3000/stock/alertas');
-            const pecas = await res.json();
-            const container = document.getElementById('alerta-container');
-            const lista = document.getElementById('lista-alertas');
-
-            if (pecas.length > 0) {
-                container.style.display = 'block';
-                lista.innerHTML = pecas.map(p => `<li>${p.nome} (Apenas ${p.quantidade} un.)</li>`).join('');
-            }
-        } catch (erro) { console.error(erro); }
-    }
-    
-    // Chama a função junto com a da faturação
-    verificarAlertas();
-    carregarFaturacao();
-</script>
 </body>
 </html>
