@@ -194,7 +194,7 @@ app.post('/reparacoes', async (req, res) => {
 app.get('/reparacoes', async (req, res) => {
   try {
     const query = `
-      SELECT r.*, c.nome AS nome_cliente, p.nome AS nome_peca 
+      SELECT r.*, c.nome AS nome_cliente, p.nome AS nome_peca, p.preco_venda 
       FROM reparacoes r
       JOIN clientes c ON r.cliente_id = c.id
       JOIN pecas p ON r.peca_id = p.id
@@ -206,7 +206,6 @@ app.get('/reparacoes', async (req, res) => {
     res.status(500).send("Erro ao ler reparações");
   }
 });
-
 // Rota para RELATÓRIO: Faturação Total (Peças + Mão de Obra + 23% IVA)
 app.get('/reparacoes/relatorio/faturacao', async (req, res) => {
   try {

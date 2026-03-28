@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Financeira</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f9; margin: 0; }
+        .card { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 10px; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1); 
+            text-align: center;
+            max-width: 400px;
+            margin: 50px auto;
+        }
+        h2 { color: #333; }
+        .valor { font-size: 2.5em; color: #28a745; font-weight: bold; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <nav style="background: #343a40; padding: 15px; margin-bottom: 20px; display: flex; gap: 15px; align-items: center;">
+        <a href="index.html" style="text-decoration: none; color: white; padding: 8px 15px; background: #007bff; border-radius: 5px; font-weight: bold;">📦 Stock</a>
+        <a href="clientes.html" style="text-decoration: none; color: white; padding: 8px 15px; background: #28a745; border-radius: 5px; font-weight: bold;">👥 Clientes</a>
+        <a href="reparacoes.html" style="text-decoration: none; color: white; padding: 8px 15px; background: #ff9800; border-radius: 5px; font-weight: bold;">🛠️ Reparações</a>
+        <a href="dashboard.html" style="text-decoration: none; color: white; padding: 8px 15px; background: #6f42c1; border-radius: 5px; font-weight: bold;">📊 Dashboard</a>
+    </nav>
+
+    <div class="card">
+        <h2>💰 Total Faturado</h2>
+        <p>(Peças + Mão de Obra + 23% IVA)</p>
+        <div id="total-valor" class="valor">A carregar...</div>
+        <button onclick="carregarFaturacao()" style="margin-top: 20px; padding: 10px; cursor: pointer;">🔄 Atualizar</button>
+    </div>
+
+    <script>
+        async function carregarFaturacao() {
+            try {
+                const resposta = await fetch('http://localhost:3000/reparacoes/relatorio/faturacao');
+                const dados = await resposta.json();
+                document.getElementById('total-valor').innerText = dados.total_faturado_com_iva;
+            } catch (erro) {
+                console.error("Erro:", erro);
+                document.getElementById('total-valor').innerText = "Erro ao carregar";
+            }
+        }
+        carregarFaturacao();
+    </script>
+</body>
+</html>

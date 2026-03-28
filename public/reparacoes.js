@@ -6,28 +6,34 @@ async function carregarReparacoes() {
         tabela.innerHTML = '';
 
         reparacoes.forEach(rep => {
-            tabela.innerHTML += `
-                <tr>
-                    <td>${rep.id}</td>
-                    <td>${rep.equipamento}</td>
-                    <td>${rep.descricao_avaria}</td>
-                    <td>${rep.nome_cliente} (${rep.cliente_id})</td>
-                    <td>${rep.nome_peca} (${rep.peca_id})</td>
-                    <td>${rep.preco_mao_de_obra} €</td>
-                    <td>
-                        <select onchange="atualizarStatus(${rep.id}, this.value, '${rep.descricao_avaria}', '${rep.equipamento}', ${rep.preco_mao_de_obra})">
-                            <option value="Pendente" ${rep.status === 'Pendente' ? 'selected' : ''}>Pendente</option>
-                            <option value="Orçamento" ${rep.status === 'Orçamento' ? 'selected' : ''}>Orçamento</option>
-                            <option value="Em reparação" ${rep.status === 'Em reparação' ? 'selected' : ''}>Em reparação</option>
-                            <option value="Concluído" ${rep.status === 'Concluído' ? 'selected' : ''}>Concluído</option>
-                        </select>
-                    </td>
-                    <td>
-                        <button onclick="eliminarReparacao(${rep.id})" style="background: #dc3545; color: white; padding: 5px; border: none; cursor: pointer;">Eliminar</button>
-                    </td>
-                </tr>
-            `;
-        });
+    // Cálculos com IVA (1.23)
+    const precoPecaComIVA = (rep.preco_venda * 1.23).toFixed(2);
+    const maoObraComIVA = (rep.preco_mao_de_obra * 1.23).toFixed(2);
+    const totalFinal = (parseFloat(precoPecaComIVA) + parseFloat(maoObraComIVA)).toFixed(2);
+
+    tabela.innerHTML += `
+        <tr>
+            <td>${rep.id}</td>
+            <td>${rep.equipamento}</td>
+            <td>${rep.nome_cliente}</td>
+            <td>${rep.nome_peca}</td>
+            <td>${precoPecaComIVA} €</td>
+            <td>${maoObraComIVA} €</td>
+            <td style="font-weight: bold; color: #28a745;">${totalFinal} €</td>
+            <td>
+                <select onchange="atualizarStatus(${rep.id}, this.value, '${rep.descricao_avaria}', '${rep.equipamento}', ${rep.preco_mao_de_obra})">
+                    <option value="Pendente" ${rep.status === 'Pendente' ? 'selected' : ''}>Pendente</option>
+                    <option value="Orçamento" ${rep.status === 'Orçamento' ? 'selected' : ''}>Orçamento</option>
+                    <option value="Em reparação" ${rep.status === 'Em reparação' ? 'selected' : ''}>Em reparação</option>
+                    <option value="Concluído" ${rep.status === 'Concluído' ? 'selected' : ''}>Concluído</option>
+                </select>
+            </td>
+            <td>
+                <button onclick="eliminarReparacao(${rep.id})" style="background: #dc3545; color: white; padding: 5px; border: none; cursor: pointer;">Eliminar</button>
+            </td>
+        </tr>
+    `;
+});
     } catch (erro) { console.error(erro); }
 }
 
