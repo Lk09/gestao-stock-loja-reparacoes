@@ -48,6 +48,27 @@ app.post('/stock', async (req, res) => {
   }
 });
 
+// Rota para PESQUISAR peças por nome
+app.get('/stock/pesquisa', async (req, res) => {
+  const { termo } = req.query; 
+  
+  if (!termo) {
+    return res.status(400).json({ erro: "Fornece um termo de pesquisa. Ex: ?termo=bateria" });
+  }
+
+  try {
+    // O ILIKE ignora maiúsculas/minúsculas. Os %% procuram o termo em qualquer parte do nome.
+    const query = 'SELECT * FROM pecas WHERE nome ILIKE $1';
+    const valores = [`%${termo}%`]; 
+    
+    const resultado = await pool.query(query, valores);
+    res.json(resultado.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Erro ao pesquisar peças");
+  }
+});
+
 // 3. Rota para atualizar dados de uma peça
 app.put('/stock/:id', async (req, res) => {
   const { id } = req.params;
@@ -153,12 +174,12 @@ app.delete('/clientes/:id', async (req, res) => {
 
 // 1. Rota Criar uma nova reparação
 app.post('/reparacoes', async (req, res) => {
-  const { equipamento, descricao_avaria, cliente_id, peca_id } = req.body;
+  const { equipamento, descricao_avaria, cliente_id, peca_id, preco_mao_de_obra } = req.body;
   try {
     const novaReparacao = await pool.query(
-      `INSERT INTO reparacoes (equipamento, descricao_avaria, cliente_id, peca_id) 
-       VALUES ($1, $2, $3, $4) RETURNING *`,
-      [equipamento, descricao_avaria, cliente_id, peca_id]
+      `INSERT INTO reparacoes (equipamento, descricao_avaria, cliente_id, peca_id, preco_mao_de_obra) 
+       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [equipamento, descricao_avaria, cliente_id, peca_id, preco_mao_de_obra || 0]
     );
     res.json(novaReparacao.rows[0]);
   } catch (err) {
@@ -166,6 +187,7 @@ app.post('/reparacoes', async (req, res) => {
     res.status(500).send("Erro ao registar reparação. Verifica se os IDs existem.");
   }
 });
+
 
 // 2. Rota para Ver todas as reparações (Com o nome do cliente e da peça)
 app.get('/reparacoes', async (req, res) => {
@@ -184,19 +206,41 @@ app.get('/reparacoes', async (req, res) => {
   }
 });
 
+// Rota para RELATÓRIO: Faturação com IVA (23%) e Mão de Obra
+app.get('/reparacoes/relatorio/faturacao', async (req, res) => {
+  try {
+    const query = `
+      SELECT SUM((p.preco_venda + COALESCE(r.preco_mao_de_obra, 0)) * 1.23) AS total_faturado
+      FROM reparacoes r
+      JOIN pecas p ON r.peca_id = p.id
+      WHERE r.status = 'Concluído'
+    `;
+    const resultado = await pool.query(query);
+    
+    // Formata para 2 casas decimais
+    const total = parseFloat(resultado.rows[0].total_faturado || 0).toFixed(2);
+    
+    res.json({ 
+      total_faturado_com_iva: `${total} €` 
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Erro ao gerar relatório financeiro");
+  }
+});
+
 // 3. Rota para ATUALIZAR uma reparação e abater stock se concluída
 app.put('/reparacoes/:id', async (req, res) => {
   const { id } = req.params;
-  const { status, descricao_avaria, equipamento } = req.body;
+  const { status, descricao_avaria, equipamento, preco_mao_de_obra } = req.body;
   
   try {
-    // 1. Atualiza a reparação
     const queryRep = `
       UPDATE reparacoes 
-      SET status = $1, descricao_avaria = $2, equipamento = $3 
-      WHERE id = $4 
+      SET status = $1, descricao_avaria = $2, equipamento = $3, preco_mao_de_obra = $4
+      WHERE id = $5 
       RETURNING *`;
-    const resRep = await pool.query(queryRep, [status, descricao_avaria, equipamento, id]);
+    const resRep = await pool.query(queryRep, [status, descricao_avaria, equipamento, preco_mao_de_obra || 0, id]);
 
     if (resRep.rows.length === 0) {
       return res.status(404).json({ erro: "Reparação não encontrada" });
@@ -204,7 +248,7 @@ app.put('/reparacoes/:id', async (req, res) => {
 
     const reparacao = resRep.rows[0];
 
-    // 2. Descontar do stock se o status for 'Concluído'
+    // Descontar do stock se o status for 'Concluído'
     if (status === 'Concluído') {
       await pool.query(
         'UPDATE pecas SET quantidade = quantidade - 1 WHERE id = $1',
