@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Reparações</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #ff9800; color: white; }
+        nav { margin-bottom: 20px; }
+        nav a { text-decoration: none; background: #007bff; color: white; padding: 10px; border-radius: 5px; margin-right: 10px; }
+    </style>
+</head>
+<body>
+   <nav style="background: #343a40; padding: 15px; margin-bottom: 20px; display: flex; gap: 15px; align-items: center; border-radius: 0 0 8px 8px;">
+    <a href="index.html" style="text-decoration: none; color: white; padding: 8px 15px; background: #007bff; border-radius: 5px; font-weight: bold;">📦 Stock</a>
+    <a href="clientes.html" style="text-decoration: none; color: white; padding: 8px 15px; background: #28a745; border-radius: 5px; font-weight: bold;">👥 Clientes</a>
+    <a href="reparacoes.html" style="text-decoration: none; color: white; padding: 8px 15px; background: #ff9800; border-radius: 5px; font-weight: bold;">🛠️ Reparações</a>
+</nav>
+    <h1>🛠️ Gestão de Reparações</h1>
+    <button onclick="carregarReparacoes()" style="padding: 10px; cursor: pointer;">🔄 Atualizar Tabela</button>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Equipamento</th>
+                <th>Avaria</th>
+                <th>Cliente (ID)</th>
+                <th>Peça (ID)</th>
+                <th>Mão de Obra</th>
+                <th>Status</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody id="tabela-reparacoes"></tbody>
+    </table>
+<div style="display: flex; gap: 20px; margin-top: 20px;">
+        <div style="flex: 1; background: white; padding: 15px; border: 1px solid #ddd;">
+            <h3>📦 Consulta Rápida: Peças</h3>
+            <table style="font-size: 0.9em;">
+                <thead>
+                    <tr><th>ID</th><th>Nome</th><th>Stock</th></tr>
+                </thead>
+                <tbody id="tabela-mini-stock"></tbody>
+            </table>
+        </div>
+        <div style="flex: 1; background: white; padding: 15px; border: 1px solid #ddd;">
+            <h3>👥 Consulta Rápida: Clientes</h3>
+            <table style="font-size: 0.9em;">
+                <thead>
+                    <tr><th>ID</th><th>Nome</th><th>NIF</th></tr>
+                </thead>
+                <tbody id="tabela-mini-clientes"></tbody>
+            </table>
+        </div>
+    </div>
+    <div style="background: white; padding: 20px; margin-top: 20px; border: 1px solid #ddd;">
+        <h3>➕ Nova Reparação</h3>
+        <form id="form-reparacoes" onsubmit="adicionarReparacao(event)">
+            <input type="text" id="equipamento" placeholder="Equipamento" required>
+            <input type="text" id="descricao_avaria" placeholder="Avaria" required>
+            <input type="number" id="cliente_id" placeholder="ID Cliente" required>
+            <input type="number" id="peca_id" placeholder="ID Peça" required>
+            <input type="number" step="0.01" id="preco_mao_de_obra" placeholder="Mão de Obra (€)" required>
+            <button type="submit" style="background: #28a745; color: white; padding: 10px; border: none; cursor: pointer;">Guardar</button>
+        </form>
+    </div>
+
+    <script src="reparacoes.js"></script>
+</body>
+</html>

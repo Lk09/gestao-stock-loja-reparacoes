@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Clientes</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #28a745; color: white; } /* Verde para distinguir do stock */
+        nav { margin-bottom: 20px; }
+        nav a { text-decoration: none; background: #007bff; color: white; padding: 10px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <nav style="background: #343a40; padding: 15px; margin-bottom: 20px; display: flex; gap: 15px; align-items: center; border-radius: 0 0 8px 8px;">
+    <a href="index.html" style="text-decoration: none; color: white; padding: 8px 15px; background: #007bff; border-radius: 5px; font-weight: bold;">📦 Stock</a>
+    <a href="clientes.html" style="text-decoration: none; color: white; padding: 8px 15px; background: #28a745; border-radius: 5px; font-weight: bold;">👥 Clientes</a>
+    <a href="reparacoes.html" style="text-decoration: none; color: white; padding: 8px 15px; background: #ff9800; border-radius: 5px; font-weight: bold;">🛠️ Reparações</a>
+</nav>
+    <h1>👥 Gestão de Clientes</h1>
+    <button onclick="carregarClientes()" style="padding: 10px; cursor: pointer;">🔄 Atualizar Tabela</button>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Telemóvel</th>
+                <th>NIF</th>
+                <th>Email</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody id="tabela-clientes">
+            </tbody>
+    </table>
+
+    <div style="background: white; padding: 20px; margin-top: 20px; border: 1px solid #ddd;">
+        <h3>➕ Adicionar Novo Cliente</h3>
+        <form id="form-clientes" onsubmit="adicionarCliente(event)">
+            <input type="text" id="nome" placeholder="Nome Completo" required>
+            <input type="text" id="telemovel" placeholder="Telemóvel" required>
+            <input type="text" id="nif" placeholder="NIF" required>
+            <input type="email" id="email" placeholder="Email">
+            <button type="submit" style="background: #28a745; color: white; padding: 10px; border: none; cursor: pointer;">Guardar Cliente</button>
+        </form>
+    </div>
+
+    <script src="clientes.js"></script>
+</body>
+</html>

@@ -8,6 +8,7 @@ const app = express();
 // --- MIDDLEWARES (Configurações) ---
 app.use(cors());
 app.use(express.json()); // <--- ISTO É VITAL para o app.post funcionar!
+app.use(express.static('public')); //<--- para o Express saber que tem de mostrar páginas web
 
 // --- LIGAÇÃO À BASE DE DADOS ---
 const pool = new Pool({
@@ -206,7 +207,7 @@ app.get('/reparacoes', async (req, res) => {
   }
 });
 
-// Rota para RELATÓRIO: Faturação com IVA (23%) e Mão de Obra
+// Rota para RELATÓRIO: Faturação Total (Peças + Mão de Obra + 23% IVA)
 app.get('/reparacoes/relatorio/faturacao', async (req, res) => {
   try {
     const query = `
@@ -217,7 +218,7 @@ app.get('/reparacoes/relatorio/faturacao', async (req, res) => {
     `;
     const resultado = await pool.query(query);
     
-    // Formata para 2 casas decimais
+    // Formata o valor para 2 casas decimais. Se for null (nenhuma reparação concluída), devolve 0.00
     const total = parseFloat(resultado.rows[0].total_faturado || 0).toFixed(2);
     
     res.json({ 
